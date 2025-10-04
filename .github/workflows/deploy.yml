@@ -33,4 +33,5 @@ jobs:
           environment_name: ${{ secrets.EB_ENV_NAME }}
           region: ${{ secrets.AWS_REGION }}
           version_label: ${{ github.run_id }}
-          deployment_package: target/spring-elastic-bean.jar
+          deployment_package: $(ls target/*.jar | head -n 1)
+
