@@ -1,0 +1,44 @@
+name: Deploy Spring Boot App to Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  JAR_PATH: target/*.jar
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build application
+        run: mvn clean package -DskipTests
+
+      - name: Verify JAR built
+        run: |
+          if [ ! -f ${{ env.JAR_PATH }} ]; then
+            echo "Build failed: JAR not found!"
+            exit 1
+          fi
+
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ secrets.EB_APP_NAME }}
+          environment_name: ${{ secrets.EB_ENV_NAME }}
+          region: ${{ secrets.AWS_REGION }}
+          version_label: "${{ github.run_number }}-${{ github.sha }}"
+          deployment_package: ${{ env.JAR_PATH }}
