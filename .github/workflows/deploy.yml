@@ -21,6 +21,10 @@ jobs:
       - name: Build the application
         run: mvn clean package -DskipTests
 
+      - name: Find built JAR file
+        id: jar
+        run: echo "JAR_FILE=$(ls target/*.jar | head -n 1)" >> $GITHUB_ENV
+
       - name: Verify JAR built
         run: ls -lh target
 
@@ -33,5 +37,4 @@ jobs:
           environment_name: ${{ secrets.EB_ENV_NAME }}
           region: ${{ secrets.AWS_REGION }}
           version_label: ${{ github.run_id }}
-          deployment_package: $(ls target/*.jar | head -n 1)
-
+          deployment_package: ${{ env.JAR_FILE }}
